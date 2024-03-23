@@ -1,0 +1,91 @@
+>> in this game we are going to have three calsses level ,game ,overworld => the game class orgnize 
+the entire game and the switching mechanic the differnt instances
+
+>> in the game class we are going to create the 'create_overworld' methode that we pass to the level class 
+and can call it from there (we will create an overworld instance inside the game class and call it from the 
+level and from the level we can pass arguments to it ), and also create the 'create_level' methode that we
+pass to the overworld class and call it from there  ===> all this to easly transfer data between calsses
+
+>> Collision: pygame can detect collisions but it cannot tell where the collision happened 
+              and for this reason we need to separate the vertical and horizontal collisions by :
+              separate the vertical and horizontal movements & collisions =>
+               1.apply vertical movement
+               2.check vertical collision
+               3.apply horizontal movement
+               4.check horizontal collision
+        we will apply these methods in the level file because we need access to the tiles
+
+>> animation: to animate the player we need to know the status of the player => is the player jumping ,
+              running, falling, touching a wall etc 
+              a lot of this information we need to grt from the interaction between the player and the level
+
+>> os.walk (path): it returns a tuple that contains a dirpath, dirname, filenames
+
+>> we change an argument into in attribute to use it outside of the __init__ methode
+
+>> we have problems ex: if our player is idling it looks like it's jumping and the the same in all our animations
+   because all our anamations have the wrong origin point in other words : each surface has a differnt dimention
+   but our rect remains the same (the surf is placing on topleft of rect), to fix this we have to :
+     1. we need to figure out what the player is colliding with (ground, ceiling, left/rightwall)
+     2. create a new rect on a new animation frame and set the origin point to the colision point 
+
+>> whene we move the player around on the ground we also get a new rect, but the problem is that for 'idls'
+   animations some images are wider than others => we get rect with differnt dimention on evrey cycle of 
+   our game => if we are touching a wall and updating our surf => may we get overlap because of wider surf
+   that creates a wider rect => wich places the player on the top of the tile
+   >  and we can't relie on direction.x (in horizontal_movement_collision) because the player can stope 
+     colliding with a wall and on_right still true the solution is :
+      1. we record the horizontal position of the collision and set on_right to true
+      2. once the layer has exceeded that podition we know the collision is false and set on_right to false
+
+  
+>> For jumping and landing particles : both of these are not looped but should be destroyed after the 
+   animation finishes => these particles should not follow the player but remain in place 
+   rq : . we create an object of ParticleEffect class in level because we need the x-shift (world_shift) for 
+        the update methode we need type witch it is in player so call the funct in player and pass the type (get input)
+        . for landing particles we will create 2 more methods in the level class and the order of thier
+        execution is crucial :
+            1. check if the player is on ground (get_player_on_ground)
+            2. player not on ground before collision + is on ground now  
+
+>> Tiled :
+    the map is the canvas to draw on 
+    tileset is each individual color
+    .we will only move the enemy either into the left or right to avoid complexity (gravity,collision)
+     and adding a red rectangle to give the enemy a constraint in it's movemment
+    .in levels the csv files contains numbers that represent the ids ( each tile of tiles-image has a specefic id )
+    ( the csv data gives us a data with the relative position of each tile ) => then we multiply these positions
+    by tilesize to get the actual position in the screen
+    .in pygame to work with these files we have to :
+           1.importing csv files
+           2.importing the images (import a tileset and slice it into parts that we are going to need)
+           3. use the data to create the level
+
+>> each tiles of the display surf is going to be 64*64
+
+>> overworld.Icon : whene we are placing an image we are placing the rectangle of it => the problem is
+whene we are placing rectangles we place integers (it converts doubles to integers) => wich cause a 
+broblem whene moving it in move_direction vector because it will be placed in a wrong position => to
+resolve this we add the 'pos' attribute  and the update methode 
+
+>> Health bar : we have 2 measurments for the health 
+            1. the pixel with of the health bar is bitween  0 and 152 pixels
+            2. in our code the player health is between 0 and 100
+            so we have to figure out how 100 health will get to 152 pixels
+
+>> problems with the playe-enemy collision :
+      1.how to know if the player jumped on an enemy or if an enemy ran into the player
+      2.the player needs to be invicible for a short time after getting hit so we don't trigger multiple
+        collisions (to not register a collision every frame of our game so once every 60ms) (because in 
+        this case the health bar will dissapere immediately ) 
+      3.the player should flicker while being invincible
+      4.spawm a particle explision when the enemy is jumped on (when the player is landing on top of the 
+      enemy and we're destroying the enemy)
+
+>> Fixing the collisions :  1.the player frequently teleports when colliding with an obstacle
+                            2.we check collisions for the whole rectangle including the sword ,witch looks
+                             and behaves strange
+ ==> to fix these problems: we will create a nex rect (include only the pirate) and the sprite rect will
+                            follow this nex rect
+
+>> once we enter the overworld the player (icon) should not be able to move for a few ms (time section in overworld)
